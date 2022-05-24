@@ -16,10 +16,10 @@ jobs:
             URL=$(curl -s https://api.github.com/repos/kubearmor/kubearmor/releases/latest | jq -r ".assets[].browser_download_url" | grep deb)
             wget -O karmor.deb $URL
       - name: Install kubermor
-        run: apt install ./karmor.deb 
+        run: sudo apt install ./karmor.deb 
 
       - name: start karmor service
-        run: systemctl start kubearmor
+        run: sudo systemctl start kubearmor && sleep 10
         
       - name: apply hostpolicy
         run: |
