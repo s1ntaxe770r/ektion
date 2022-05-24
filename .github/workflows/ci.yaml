@@ -1,4 +1,4 @@
-on:
+n:
   push:
     branches:
       - 'main'
@@ -27,10 +27,10 @@ jobs:
             curl -o hostpolicy.yaml $URL
             karmor vm policy add hostpolicy.yaml
  
-     - name: set output hostpolicy name
-       run: |
-          PolicyName=$(karmor log --json | jq .PolicyName)
-          echo "::set-output name=hostpolicyname::$PolicyName"
+      - name: set output hostpolicy name
+        run: |
+            PolicyName=$(karmor log --json | jq .PolicyName)
+            echo "::set-output name=hostpolicyname::$PolicyName"
           
-    - name: echo host policy name
-      run: echo "${{ steps.random-color-generator.outputs.hostpolicyname}}"
+      - name: echo host policy name
+        run: echo "${{ steps.random-color-generator.outputs.hostpolicyname}}"
