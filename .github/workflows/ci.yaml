@@ -13,6 +13,7 @@ jobs:
     steps:
       - name: Grab latest kubermor binary
         run: |
+            sudo apt-get update
             URL=$(curl -s https://api.github.com/repos/kubearmor/kubearmor/releases/latest | jq -r ".assets[].browser_download_url" | grep deb)
             wget -O karmor.deb $URL
       - name: Install kubermor
