@@ -1,0 +1,36 @@
+on:
+  push:
+    branches:
+      - 'main'
+
+name: Test Kuberamor on VM 
+
+jobs:
+  build:
+    name: Test Kubearmor 
+    runs-on: 20.04
+    timeout-minutes: 20
+    steps:
+      - name: Grab latest kubermor binary
+        run: |
+            URL=$(curl -s https://api.github.com/repos/kubearmor/kubearmor/releases/latest | jq -r ".assets[].browser_download_url" | grep deb)
+            wget -O karmor.deb $URL
+      - name: Install kubermor
+        run: apt install ./karmor.deb 
+
+      - name: start karmor service
+        run: systemctl start kubearmor
+        
+      - name: apply hostpolicy
+        run: |
+            URL=https://raw.githubusercontent.com/kubearmor/KubeArmor/main/examples/host-security-policies/hsp-kubearmor-dev-proc-path-allow-fromSource.yaml
+            curl -o hostpolicy.yaml $URL
+            karmor vm policy add hostpolicy.yaml
+ 
+     - name: set output hostpolicy name
+       run: |
+          PolicyName=$(karmor log --json | jq .PolicyName)
+          echo "::set-output name=hostpolicyname::$PolicyName"
+          
+    - name: echo host policy name
+      run: echo "${{ steps.random-color-generator.outputs.hostpolicyname}}"
