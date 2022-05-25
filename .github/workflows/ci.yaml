@@ -27,6 +27,7 @@ jobs:
             URL=https://raw.githubusercontent.com/kubearmor/KubeArmor/main/examples/host-security-policies/hsp-kubearmor-dev-proc-path-allow-fromSource.yaml
             curl -o hostpolicy.yaml $URL
             karmor vm policy add hostpolicy.yaml
+            sudo systemctl status kubearmor.service
  
       - name: set output hostpolicy name
         run: |
