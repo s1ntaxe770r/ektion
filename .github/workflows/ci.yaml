@@ -1,52 +1,24 @@
-on:
-  push:
-    branches:
-      - 'master'
+name: CI
 
-name: Test Kuberamor on VM 
+on: 
+  push:
+    # only trigger on branches, not on tags
+    branches: '**'
 
 jobs:
   build:
-    name: Test Kubearmor 
-    runs-on: ubuntu-20.04
-    timeout-minutes: 20
-    steps:
-      - name: Grab latest kubermor binary
-        run: |
-            sudo apt-get update
-            URL=$(curl -s https://api.github.com/repos/kubearmor/kubearmor/releases/latest | jq -r ".assets[].browser_download_url" | grep deb)
-            wget -O karmor.deb $URL
-            
-      - name: Build bcc
-        run: |
-            set -x
-            sudo apt-get update
-            sudo apt-get -y install build-essential cmake bison flex git python3 python3-pip clang-9 libllvm9 llvm-9-dev libclang-9-dev zlib1g-dev libelf-dev libedit-dev libfl-dev
-            pushd /tmp
-            git clone --branch v0.24.0 --depth 1 https://github.com/iovisor/bcc.git
-            mkdir -p bcc/build; cd bcc/build
-            sudo ln -s /usr/lib/llvm-9 /usr/local/llvm
-            cmake .. -DPYTHON_CMD=python3 -DCMAKE_INSTALL_PREFIX=/usr
-            make -j$(nproc)
-            sudo make install
-            popd
-      - name: Install kubermor
-        run: sudo apt install ./karmor.deb 
+    runs-on: ubuntu-latest
 
-      - name: start karmor service
-        run: sudo systemctl start kubearmor && sleep 10
-        
-      - name: apply hostpolicy
-        run: |
-            URL=https://raw.githubusercontent.com/kubearmor/KubeArmor/main/examples/host-security-policies/hsp-kubearmor-dev-proc-path-allow-fromSource.yaml
-            curl -o hostpolicy.yaml $URL
-            kubearmor vm --kvms policy hostpolicy.yaml
-            sudo systemctl status kubearmor.service
- 
-      - name: set output hostpolicy name
-        run: |
-            PolicyName=$(karmor log --json | jq .PolicyName)
-            echo "::set-output name=hostpolicyname::$PolicyName"
-          
-      - name: echo host policy name
-        run: echo "${{ steps.random-color-generator.outputs.hostpolicyname}}"
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.16.1' 
+      - uses: actions/checkout@v2
+        with:
+          # checkout full tree
+          fetch-depth: 0
+      - run: |
+          for commit in $(git rev-list ${{ github.event.before}}..${{ github.sha}}); do
+              git checkout $commit
+              go version
+          done
