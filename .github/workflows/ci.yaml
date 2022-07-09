@@ -21,4 +21,9 @@ jobs:
           for commit in $(git rev-list ${{ github.event.before}}..${{ github.sha}}); do
               git checkout $commit
               go build test.go
+              if [ $? -eq 0 ]; then
+                echo "commit $commit compiled"
+              else
+                echo "failed to compile $commit"
+              fi
           done
