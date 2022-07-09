@@ -20,5 +20,5 @@ jobs:
       - run: |
           for commit in $(git rev-list ${{ github.event.before}}..${{ github.sha}}); do
               git checkout $commit
-              go version
+              go build test.go
           done
